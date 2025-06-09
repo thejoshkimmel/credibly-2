@@ -16,31 +16,30 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("users");
 
   useEffect(() => {
-    checkAdmin();
-  }, []);
-
-  const checkAdmin = async () => {
-    try {
-      const res = await fetch("/api/auth/check-admin", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      if (!res.ok) {
+    const checkAdmin = async () => {
+      try {
+        const res = await fetch("/api/auth/check-admin", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!res.ok) {
+          router.replace("/login");
+          return;
+        }
+        const data = await res.json();
+        if (!data.isAdmin) {
+          router.replace("/");
+          return;
+        }
+        setIsAdmin(true);
+        loadData();
+      } catch {
         router.replace("/login");
-        return;
       }
-      const data = await res.json();
-      if (!data.isAdmin) {
-        router.replace("/");
-        return;
-      }
-      setIsAdmin(true);
-      loadData();
-    } catch {
-      router.replace("/login");
-    }
-  };
+    };
+    checkAdmin();
+  }, [router]);
 
   const loadData = async () => {
     setLoading(true);

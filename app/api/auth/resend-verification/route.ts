@@ -3,11 +3,12 @@ import UserProfile from "@/models/UserProfile";
 import { connectToDatabase } from "@/lib/mongodb";
 import { sendEmail } from "@/lib/email";
 import crypto from "crypto";
+import { NextRequest } from "next/server";
 
-export async function POST(req) {
+export async function POST(req: NextRequest) {
   await connectToDatabase();
   const { email } = await req.json();
-  const user = await UserProfile.findOne({ userId: email });
+  const user = await UserProfile.findOne({ email });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
   if (user.verified) return NextResponse.json({ error: "User already verified" }, { status: 400 });
   const verificationToken = crypto.randomBytes(32).toString("hex");

@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
 import ClientLayout from "./components/ClientLayout"
+import Link from "next/link"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -27,6 +28,9 @@ export default function RootLayout({
             {children}
           </ClientLayout>
           <Toaster />
+          <Link href="/terms-of-service" className="px-4 text-gray-400 hover:text-white">
+            Terms of Service
+          </Link>
         </ThemeProvider>
       </body>
     </html>

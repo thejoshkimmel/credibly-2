@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Loader2 } from "lucide-react"
+import Cookies from "js-cookie"
 
 export default function LoginPage() {
   const [userType, setUserType] = useState("company")
@@ -17,31 +18,48 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    console.log('Submitting login form')
     setError("")
     const formData = new FormData(e.currentTarget)
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
     try {
+      console.log('Sending login request for:', email)
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, userType })
       })
 
+      const data = await res.json()
+      console.log('Login response:', { status: res.status, data })
+
       if (res.status === 403) {
         setError("Please verify your email before logging in. Check your inbox for a verification link.")
         return
       }
       if (!res.ok) {
-        const data = await res.json()
         setError(data.error || "Login failed")
         return
       }
-      // On success, redirect or set auth state here
-      // For now, just reload
+
+      // Wait a moment for the cookie to be set
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Check if the cookie was set
+      const token = Cookies.get("token")
+      console.log('Token after login:', token)
+      
+      if (!token) {
+        setError("Login failed. Please try again.")
+        return
+      }
+
+      // Redirect to dashboard
       window.location.href = "/dashboard"
     } catch (err) {
+      console.error("Login error:", err)
       setError("Login failed. Please try again.")
     }
   }
@@ -112,9 +130,7 @@ export default function LoginPage() {
               </div>
               <Input id="password" name="password" type="password" required />
             </div>
-            <Button type="submit" className="w-full">
-              Log in
-            </Button>
+            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md">Log in</button>
             {error && (
               <div className="text-red-600 text-center mt-2">
                 {error}
