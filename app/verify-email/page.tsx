@@ -1,8 +1,9 @@
 "use client";
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [status, setStatus] = useState<null | "success" | "error">(null);
@@ -37,5 +38,13 @@ export default function VerifyEmailPage() {
       {status === "success" && <div className="text-green-600 font-semibold">{message}</div>}
       {status === "error" && <div className="text-red-600 font-semibold">{message}</div>}
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 } 

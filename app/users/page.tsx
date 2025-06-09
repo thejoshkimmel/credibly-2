@@ -2,16 +2,23 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 
+interface User {
+  _id: string;
+  displayName?: string;
+  location?: string;
+  profilePicture?: string;
+}
+
 export default function UserDirectoryPage() {
   const [query, setQuery] = useState("");
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
   const observer = useRef<IntersectionObserver | null>(null);
   const lastUserRef = useCallback(
-    (node) => {
+    (node: HTMLDivElement | null) => {
       if (loading) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new window.IntersectionObserver((entries) => {
@@ -31,22 +38,30 @@ export default function UserDirectoryPage() {
   }, [query]);
 
   useEffect(() => {
+    let ignore = false;
     setLoading(true);
     fetch(`/api/users?q=${encodeURIComponent(query)}&page=${page}&limit=20`)
       .then((res) => res.json())
       .then((data) => {
+        if (ignore) return;
         setUsers((prev) => (page === 1 ? data.users : [...prev, ...data.users]));
         setTotal(data.total);
-        setHasMore(data.users.length > 0 && (page * 20 < data.total));
+        setHasMore(data.users.length > 0 && page * 20 < data.total);
         setLoading(false);
+      })
+      .catch(() => {
+        if (!ignore) setLoading(false);
       });
+    return () => {
+      ignore = true;
+    };
   }, [query, page]);
 
   return (
     <main className="max-w-2xl mx-auto py-8 px-2 sm:px-4">
       <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">User Directory</h1>
       <form
-        onSubmit={e => { e.preventDefault(); }}
+        onSubmit={(e) => { e.preventDefault(); }}
         className="mb-6 flex flex-col sm:flex-row gap-2 justify-center"
       >
         <input
@@ -62,40 +77,21 @@ export default function UserDirectoryPage() {
       ) : (
         <div className="space-y-4">
           {users.map((user, i) => {
+            const userImg = user.profilePicture || "/placeholder-user.jpg";
+            const userName = user.displayName || "Unnamed User";
+            const userLocation = user.location || "";
             if (i === users.length - 1) {
               return (
                 <div ref={lastUserRef} key={user._id} className="p-4 border rounded flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <img
-                      src={user.profilePicture || "/placeholder-user.jpg"}
-                      alt={user.displayName || "User"}
+                      src={userImg}
+                      alt={userName}
                       className="w-16 h-16 sm:w-12 sm:h-12 rounded-full object-cover border mx-auto sm:mx-0"
                     />
                     <div>
-                      <div className="font-semibold text-lg sm:text-base">{user.displayName || "Unnamed User"}</div>
-                      <div className="text-sm text-gray-500">{user.location}</div>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/users/${user._id}`}
-                    className="mt-2 sm:mt-0 px-4 py-2 bg-blue-600 text-white rounded text-center w-full sm:w-auto"
-                  >
-                    View Profile
-                  </Link>
-                </div>
-              );
-            } else {
-              return (
-                <div key={user._id} className="p-4 border rounded flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={user.profilePicture || "/placeholder-user.jpg"}
-                      alt={user.displayName || "User"}
-                      className="w-16 h-16 sm:w-12 sm:h-12 rounded-full object-cover border mx-auto sm:mx-0"
-                    />
-                    <div>
-                      <div className="font-semibold text-lg sm:text-base">{user.displayName || "Unnamed User"}</div>
-                      <div className="text-sm text-gray-500">{user.location}</div>
+                      <div className="font-semibold text-lg sm:text-base">{userName}</div>
+                      <div className="text-sm text-gray-500">{userLocation}</div>
                     </div>
                   </div>
                   <Link
@@ -107,6 +103,27 @@ export default function UserDirectoryPage() {
                 </div>
               );
             }
+            return (
+              <div key={user._id} className="p-4 border rounded flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={userImg}
+                    alt={userName}
+                    className="w-16 h-16 sm:w-12 sm:h-12 rounded-full object-cover border mx-auto sm:mx-0"
+                  />
+                  <div>
+                    <div className="font-semibold text-lg sm:text-base">{userName}</div>
+                    <div className="text-sm text-gray-500">{userLocation}</div>
+                  </div>
+                </div>
+                <Link
+                  href={`/users/${user._id}`}
+                  className="mt-2 sm:mt-0 px-4 py-2 bg-blue-600 text-white rounded text-center w-full sm:w-auto"
+                >
+                  View Profile
+                </Link>
+              </div>
+            );
           })}
         </div>
       )}
