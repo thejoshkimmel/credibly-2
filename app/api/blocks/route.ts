@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Block from "@/models/Block";
 import { connectToDatabase } from "@/lib/mongodb";
 import { getUserFromRequest } from "@/lib/auth";
@@ -12,15 +12,9 @@ const blockSchema = z.object({
 // GET /api/blocks - Get list of blocked users
 export async function GET(req) {
   await connectToDatabase();
-  let userId;
-  try {
-    userId = getUserFromRequest(req);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
-    const blocks = await Block.find({ blockerId: userId })
+    const blocks = await Block.find({ blockerId: req.userId })
       .populate("blockedId", "displayName userId profilePicture");
     return NextResponse.json({ blocks });
   } catch (error) {
@@ -31,12 +25,6 @@ export async function GET(req) {
 // POST /api/blocks - Block a user
 export async function POST(req) {
   await connectToDatabase();
-  let userId;
-  try {
-    userId = getUserFromRequest(req);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const body = await req.json();
@@ -49,7 +37,7 @@ export async function POST(req) {
 
     // Create the block
     const block = await Block.create({
-      blockerId: userId,
+      blockerId: req.userId,
       blockedId,
       reason,
     });
@@ -66,12 +54,6 @@ export async function POST(req) {
 // DELETE /api/blocks - Unblock a user
 export async function DELETE(req) {
   await connectToDatabase();
-  let userId;
-  try {
-    userId = getUserFromRequest(req);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const { searchParams } = new URL(req.url);
@@ -81,7 +63,7 @@ export async function DELETE(req) {
       return NextResponse.json({ error: "Missing blockedId" }, { status: 400 });
     }
 
-    await Block.deleteOne({ blockerId: userId, blockedId });
+    await Block.deleteOne({ blockerId: req.userId, blockedId });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: "Failed to unblock user" }, { status: 500 });

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import UserProfile from "@/models/UserProfile";
 import { connectToDatabase } from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
