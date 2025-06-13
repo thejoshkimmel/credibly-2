@@ -1,6 +1,6 @@
-"use client";
-import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
+'use client';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 
 interface User {
   _id: string;
@@ -10,7 +10,7 @@ interface User {
 }
 
 export default function UserDirectoryPage() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -21,9 +21,9 @@ export default function UserDirectoryPage() {
     (node: HTMLDivElement | null) => {
       if (loading) return;
       if (observer.current) observer.current.disconnect();
-      observer.current = new window.IntersectionObserver((entries) => {
+      observer.current = new window.IntersectionObserver(entries => {
         if (entries[0].isIntersecting && hasMore) {
-          setPage((prev) => prev + 1);
+          setPage(prev => prev + 1);
         }
       });
       if (node) observer.current.observe(node);
@@ -41,10 +41,10 @@ export default function UserDirectoryPage() {
     let ignore = false;
     setLoading(true);
     fetch(`/api/users?q=${encodeURIComponent(query)}&page=${page}&limit=20`)
-      .then((res) => res.json())
-      .then((data) => {
+      .then(res => res.json())
+      .then(data => {
         if (ignore) return;
-        setUsers((prev) => (page === 1 ? data.users : [...prev, ...data.users]));
+        setUsers(prev => (page === 1 ? data.users : [...prev, ...data.users]));
         setTotal(data.total);
         setHasMore(data.users.length > 0 && page * 20 < data.total);
         setLoading(false);
@@ -61,7 +61,9 @@ export default function UserDirectoryPage() {
     <main className="max-w-2xl mx-auto py-8 px-2 sm:px-4">
       <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center">User Directory</h1>
       <form
-        onSubmit={(e) => { e.preventDefault(); }}
+        onSubmit={e => {
+          e.preventDefault();
+        }}
         className="mb-6 flex flex-col sm:flex-row gap-2 justify-center"
       >
         <input
@@ -77,12 +79,16 @@ export default function UserDirectoryPage() {
       ) : (
         <div className="space-y-4">
           {users.map((user, i) => {
-            const userImg = user.profilePicture || "/placeholder-user.jpg";
-            const userName = user.displayName || "Unnamed User";
-            const userLocation = user.location || "";
+            const userImg = user.profilePicture || '/placeholder-user.jpg';
+            const userName = user.displayName || 'Unnamed User';
+            const userLocation = user.location || '';
             if (i === users.length - 1) {
               return (
-                <div ref={lastUserRef} key={user._id} className="p-4 border rounded flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div
+                  ref={lastUserRef}
+                  key={user._id}
+                  className="p-4 border rounded flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
                   <div className="flex items-center gap-4">
                     <img
                       src={userImg}
@@ -104,7 +110,10 @@ export default function UserDirectoryPage() {
               );
             }
             return (
-              <div key={user._id} className="p-4 border rounded flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div
+                key={user._id}
+                className="p-4 border rounded flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
                 <div className="flex items-center gap-4">
                   <img
                     src={userImg}
@@ -133,4 +142,4 @@ export default function UserDirectoryPage() {
       )}
     </main>
   );
-} 
+}

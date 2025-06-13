@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminStats() {
   const [loading, setLoading] = useState(true);
@@ -38,9 +38,9 @@ export default function AdminStats() {
   const loadStats = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/stats", {
+      const res = await fetch('/api/admin/stats', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
       if (res.ok) {
@@ -48,7 +48,7 @@ export default function AdminStats() {
         setStats(data);
       }
     } catch (error) {
-      console.error("Failed to load stats:", error);
+      console.error('Failed to load stats:', error);
     }
     setLoading(false);
   };
@@ -173,4 +173,4 @@ export default function AdminStats() {
       </div>
     </div>
   );
-} 
+}

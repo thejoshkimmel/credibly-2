@@ -1,33 +1,33 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function OnboardingPage() {
-  const [displayName, setDisplayName] = useState("");
-  const [bio, setBio] = useState("");
-  const [location, setLocation] = useState("");
-  const [profilePicture, setProfilePicture] = useState("");
+  const [displayName, setDisplayName] = useState('');
+  const [bio, setBio] = useState('');
+  const [location, setLocation] = useState('');
+  const [profilePicture, setProfilePicture] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    setError("");
-    const res = await fetch("/api/users/me", {
-      method: "POST",
+    setError('');
+    const res = await fetch('/api/users/me', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
       body: JSON.stringify({ displayName, bio, location, profilePicture }),
     });
     if (res.ok) {
-      router.push("/dashboard");
+      router.push('/dashboard');
     } else {
       const data = await res.json();
-      setError(data.error || "Failed to update profile");
+      setError(data.error || 'Failed to update profile');
     }
     setSubmitting(false);
   }
@@ -77,10 +77,10 @@ export default function OnboardingPage() {
           className="w-full bg-blue-600 text-white py-2 rounded"
           disabled={submitting}
         >
-          {submitting ? "Saving..." : "Save and Continue"}
+          {submitting ? 'Saving...' : 'Save and Continue'}
         </button>
         {error && <div className="text-red-600 text-center mt-2">{error}</div>}
       </form>
     </main>
   );
-} 
+}

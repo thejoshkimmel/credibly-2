@@ -1,35 +1,49 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2 } from 'lucide-react';
 
 export default function ReportDialog({ reportedUserId, reportedUserName }) {
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState("");
-  const [description, setDescription] = useState("");
+  const [type, setType] = useState('');
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async () => {
     if (!type || !description) {
-      setError("Please fill in all fields");
+      setError('Please fill in all fields');
       return;
     }
 
     setLoading(true);
-    setError("");
+    setError('');
     try {
-      const res = await fetch("/api/reports", {
-        method: "POST",
+      const res = await fetch('/api/reports', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
           reportedUserId,
@@ -43,15 +57,15 @@ export default function ReportDialog({ reportedUserId, reportedUserName }) {
         setTimeout(() => {
           setOpen(false);
           setSuccess(false);
-          setType("");
-          setDescription("");
+          setType('');
+          setDescription('');
         }, 2000);
       } else {
         const data = await res.json();
-        setError(data.error || "Failed to submit report");
+        setError(data.error || 'Failed to submit report');
       }
     } catch {
-      setError("Failed to submit report");
+      setError('Failed to submit report');
     }
     setLoading(false);
   };
@@ -59,7 +73,9 @@ export default function ReportDialog({ reportedUserId, reportedUserName }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Report User</Button>
+        <Button variant="outline" size="sm">
+          Report User
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -91,7 +107,7 @@ export default function ReportDialog({ reportedUserId, reportedUserName }) {
             <Textarea
               placeholder="Please provide details about your report..."
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               rows={4}
             />
           </div>
@@ -101,7 +117,9 @@ export default function ReportDialog({ reportedUserId, reportedUserName }) {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={handleSubmit} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
             Submit Report
@@ -110,4 +128,4 @@ export default function ReportDialog({ reportedUserId, reportedUserName }) {
       </DialogContent>
     </Dialog>
   );
-} 
+}

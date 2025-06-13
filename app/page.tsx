@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, CheckCircle, Users, Star } from "lucide-react"
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, CheckCircle, Users, Star } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -19,7 +19,8 @@ export default function HomePage() {
                   <span className="text-gray-700"> Verified Ratings</span>
                 </h1>
                 <p className="mt-6 text-lg text-gray-600">
-                  Credibly helps professionals build and maintain their reputation through verified ratings and reviews from colleagues and clients.
+                  Credibly helps professionals build and maintain their reputation through verified
+                  ratings and reviews from colleagues and clients.
                 </p>
                 <div className="flex flex-wrap mt-8 gap-4">
                   <Link href="/signup">
@@ -37,12 +38,15 @@ export default function HomePage() {
               </div>
             </div>
             <div className="w-full px-4 mt-12 lg:w-1/2 lg:mt-0">
-              <div className="relative w-full max-w-3xl mx-auto rounded-lg overflow-hidden shadow-xl" style={{ height: 400 }}>
+              <div
+                className="relative w-full max-w-3xl mx-auto rounded-lg overflow-hidden shadow-xl"
+                style={{ height: 400 }}
+              >
                 <Image
                   src="/hero-image.png"
                   alt="Credibly Platform"
                   fill
-                  style={{ objectFit: "cover" }}
+                  style={{ objectFit: 'cover' }}
                   priority
                 />
                 <div className="absolute top-0 left-0 w-full h-full bg-gray-700 rounded-lg opacity-10 pointer-events-none" />
@@ -56,11 +60,10 @@ export default function HomePage() {
       <section className="py-20 bg-white">
         <div className="container px-4 mx-auto">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-              Why Choose Credibly?
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">Why Choose Credibly?</h2>
             <p className="mt-4 text-lg text-gray-600">
-              Our platform provides everything you need to build and maintain professional credibility.
+              Our platform provides everything you need to build and maintain professional
+              credibility.
             </p>
           </div>
 
@@ -71,7 +74,8 @@ export default function HomePage() {
               </div>
               <h3 className="mb-4 text-xl font-bold text-gray-900">Verified Ratings</h3>
               <p className="text-gray-600">
-                All ratings are verified to ensure authenticity and build trust in your professional reputation.
+                All ratings are verified to ensure authenticity and build trust in your professional
+                reputation.
               </p>
             </div>
 
@@ -91,7 +95,8 @@ export default function HomePage() {
               </div>
               <h3 className="mb-4 text-xl font-bold text-gray-900">Credibly Score</h3>
               <p className="text-gray-600">
-                Your Credibly Score is a dynamic, trust-based rating calculated from verified feedback, helping you stand out in your industry.
+                Your Credibly Score is a dynamic, trust-based rating calculated from verified
+                feedback, helping you stand out in your industry.
               </p>
             </div>
           </div>
@@ -110,13 +115,21 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap justify-center mt-8 gap-4">
               <Link href="/signup">
-                <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-blue-50">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="bg-white text-blue-600 hover:bg-blue-50"
+                >
                   Get Started Free
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
               <Link href="/login">
-                <Button size="lg" variant="outline" className="text-white border-white hover:bg-blue-700">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-white border-white hover:bg-blue-700"
+                >
                   Sign In
                 </Button>
               </Link>
@@ -155,5 +168,5 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import type React from "react"
+import type React from 'react';
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { BarChart3, Bell, Home, LogOut, MessageSquare, Settings, Star, Users } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { BarChart3, Bell, Home, LogOut, MessageSquare, Settings, Star, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -25,23 +25,19 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const pathname = usePathname()
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "Teams", href: "/dashboard/teams", icon: Users },
-    { name: "Ratings", href: "/dashboard/ratings", icon: Star },
-    { name: "Messaging", href: "/dashboard/messaging", icon: MessageSquare },
-    { name: "Reports", href: "/dashboard/reports", icon: BarChart3 },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
-  ]
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Teams', href: '/dashboard/teams', icon: Users },
+    { name: 'Ratings', href: '/dashboard/ratings', icon: Star },
+    { name: 'Messaging', href: '/dashboard/messaging', icon: MessageSquare },
+    { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  ];
 
   return (
     <SidebarProvider>
@@ -54,7 +50,7 @@ export default function DashboardLayout({
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
-              {navigation.map((item) => (
+              {navigation.map(item => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.name}>
                     <Link href={item.href}>
@@ -135,5 +131,5 @@ export default function DashboardLayout({
         </div>
       </div>
     </SidebarProvider>
-  )
+  );
 }

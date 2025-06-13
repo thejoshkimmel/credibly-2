@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import Block from "@/models/Block";
-import { connectToDatabase } from "@/lib/mongodb";
-import { getUserFromRequest } from "@/lib/auth";
-import { z } from "zod";
+import { NextResponse } from 'next/server';
+import Block from '@/models/Block';
+import { connectToDatabase } from '@/lib/mongodb';
+import { getUserFromRequest } from '@/lib/auth';
+import { z } from 'zod';
 
 const blockSchema = z.object({
   blockedId: z.string().min(1),
@@ -14,11 +14,13 @@ export async function GET(req) {
   await connectToDatabase();
 
   try {
-    const blocks = await Block.find({ blockerId: req.userId })
-      .populate("blockedId", "displayName userId profilePicture");
+    const blocks = await Block.find({ blockerId: req.userId }).populate(
+      'blockedId',
+      'displayName userId profilePicture'
+    );
     return NextResponse.json({ blocks });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch blocks" }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch blocks' }, { status: 500 });
   }
 }
 
@@ -30,7 +32,7 @@ export async function POST(req) {
     const body = await req.json();
     const parsed = blockSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
 
     const { blockedId, reason } = parsed.data;
@@ -45,9 +47,9 @@ export async function POST(req) {
     return NextResponse.json({ success: true, block });
   } catch (error) {
     if (error.code === 11000) {
-      return NextResponse.json({ error: "User is already blocked" }, { status: 400 });
+      return NextResponse.json({ error: 'User is already blocked' }, { status: 400 });
     }
-    return NextResponse.json({ error: "Failed to block user" }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to block user' }, { status: 500 });
   }
 }
 
@@ -57,15 +59,15 @@ export async function DELETE(req) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const blockedId = searchParams.get("blockedId");
-    
+    const blockedId = searchParams.get('blockedId');
+
     if (!blockedId) {
-      return NextResponse.json({ error: "Missing blockedId" }, { status: 400 });
+      return NextResponse.json({ error: 'Missing blockedId' }, { status: 400 });
     }
 
     await Block.deleteOne({ blockerId: req.userId, blockedId });
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to unblock user" }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to unblock user' }, { status: 500 });
   }
-} 
+}

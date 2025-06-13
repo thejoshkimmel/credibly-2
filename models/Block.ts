@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const BlockSchema = new mongoose.Schema({
-  blockerId: { type: mongoose.Schema.Types.ObjectId, ref: "UserProfile", required: true },
-  blockedId: { type: mongoose.Schema.Types.ObjectId, ref: "UserProfile", required: true },
+  blockerId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserProfile', required: true },
+  blockedId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserProfile', required: true },
   reason: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
@@ -11,4 +11,4 @@ const BlockSchema = new mongoose.Schema({
 BlockSchema.index({ blockerId: 1, blockedId: 1 }, { unique: true });
 BlockSchema.index({ blockerId: 1 });
 
-export default mongoose.models.Block || mongoose.model("Block", BlockSchema); 
+export default mongoose.models.Block || mongoose.model('Block', BlockSchema);

@@ -9,7 +9,7 @@ function App() {
   const [mode, setMode] = useState('login');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     try {
       if (mode === 'signup') {
@@ -50,7 +50,10 @@ function App() {
           {mode === 'signup' ? 'Sign Up' : 'Log In'}
         </button>
       </form>
-      <button onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')} style={{ marginTop: 10 }}>
+      <button
+        onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
+        style={{ marginTop: 10 }}
+      >
         {mode === 'signup' ? 'Already have an account? Log In' : 'No account? Sign Up'}
       </button>
       <div style={{ marginTop: 10, color: 'green' }}>{message}</div>
@@ -58,4 +61,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

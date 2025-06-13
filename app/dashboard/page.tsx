@@ -1,8 +1,8 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { BarChart3, MessageSquare, Plus, Star, Users } from "lucide-react"
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { BarChart3, MessageSquare, Plus, Star, Users } from 'lucide-react';
 
 export default function DashboardPage() {
   return (
@@ -10,7 +10,9 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Welcome back, John!</h2>
-          <p className="text-muted-foreground">Here's an overview of your company's performance and activities.</p>
+          <p className="text-muted-foreground">
+            Here's an overview of your company's performance and activities.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/dashboard/employees/add">
@@ -74,10 +76,25 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {[
-                { name: "Sarah Johnson", role: "Product Designer", department: "Design", score: 92 },
-                { name: "Michael Chen", role: "Frontend Developer", department: "Engineering", score: 88 },
-                { name: "Emily Rodriguez", role: "Marketing Manager", department: "Marketing", score: 90 },
-                { name: "David Kim", role: "Data Analyst", department: "Analytics", score: 85 },
+                {
+                  name: 'Sarah Johnson',
+                  role: 'Product Designer',
+                  department: 'Design',
+                  score: 92,
+                },
+                {
+                  name: 'Michael Chen',
+                  role: 'Frontend Developer',
+                  department: 'Engineering',
+                  score: 88,
+                },
+                {
+                  name: 'Emily Rodriguez',
+                  role: 'Marketing Manager',
+                  department: 'Marketing',
+                  score: 90,
+                },
+                { name: 'David Kim', role: 'Data Analyst', department: 'Analytics', score: 85 },
               ].map((employee, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -85,9 +102,9 @@ export default function DashboardPage() {
                       <AvatarImage src={`/placeholder.svg?${i}`} alt={employee.name} />
                       <AvatarFallback>
                         {employee.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -124,22 +141,30 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {[
-                { name: "Sarah Johnson", message: "Thank you for the feedback on my presentation!", time: "2h ago" },
                 {
-                  name: "Michael Chen",
-                  message: "I've completed the frontend task ahead of schedule.",
-                  time: "5h ago",
+                  name: 'Sarah Johnson',
+                  message: 'Thank you for the feedback on my presentation!',
+                  time: '2h ago',
                 },
-                { name: "Emily Rodriguez", message: "Can we discuss the marketing strategy tomorrow?", time: "1d ago" },
+                {
+                  name: 'Michael Chen',
+                  message: "I've completed the frontend task ahead of schedule.",
+                  time: '5h ago',
+                },
+                {
+                  name: 'Emily Rodriguez',
+                  message: 'Can we discuss the marketing strategy tomorrow?',
+                  time: '1d ago',
+                },
               ].map((message, i) => (
                 <div key={i} className="flex gap-4">
                   <Avatar>
                     <AvatarImage src={`/placeholder.svg?${i}`} alt={message.name} />
                     <AvatarFallback>
                       {message.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                        .split(' ')
+                        .map(n => n[0])
+                        .join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">
@@ -161,5 +186,5 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

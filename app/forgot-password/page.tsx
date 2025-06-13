@@ -1,39 +1,46 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("")
-  const [status, setStatus] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setStatus("")
-    setLoading(true)
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setStatus('');
+    setLoading(true);
     try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      })
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
       if (res.ok) {
-        setStatus("If an account exists, a reset link has been sent to your email.")
+        setStatus('If an account exists, a reset link has been sent to your email.');
       } else {
-        const data = await res.json()
-        setStatus(data.error || "Failed to send reset link.")
+        const data = await res.json();
+        setStatus(data.error || 'Failed to send reset link.');
       }
     } catch {
-      setStatus("Failed to send reset link.")
+      setStatus('Failed to send reset link.');
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
@@ -49,7 +56,13 @@ export default function ForgotPasswordPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
@@ -60,7 +73,7 @@ export default function ForgotPasswordPage() {
         </form>
         <CardFooter className="flex flex-col">
           <div className="text-sm text-muted-foreground text-center">
-            Remembered your password? {" "}
+            Remembered your password?{' '}
             <Link href="/login" className="text-primary underline-offset-4 hover:underline">
               Log in
             </Link>
@@ -68,5 +81,5 @@ export default function ForgotPasswordPage() {
         </CardFooter>
       </Card>
     </div>
-  )
-} 
+  );
+}

@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const RatingSchema = new mongoose.Schema({
-  ratedUserId: { type: mongoose.Schema.Types.ObjectId, ref: "UserProfile", required: true },
-  raterUserId: { type: mongoose.Schema.Types.ObjectId, ref: "UserProfile", required: true },
+  ratedUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserProfile', required: true },
+  raterUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserProfile', required: true },
   criteria: {
     professionalism: { type: Number, required: true },
     timeliness: { type: Number, required: true },
@@ -17,4 +17,4 @@ RatingSchema.index({ ratedUserId: 1 });
 RatingSchema.index({ raterUserId: 1 });
 RatingSchema.index({ createdAt: -1 });
 
-export default mongoose.models.Rating || mongoose.model("Rating", RatingSchema); 
+export default mongoose.models.Rating || mongoose.model('Rating', RatingSchema);

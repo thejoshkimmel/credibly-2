@@ -1,25 +1,25 @@
-"use client"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, MessageSquare, Star } from "lucide-react"
-import { useEffect, useState } from "react"
-import RatingForm from "./RatingForm"
+'use client';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, MessageSquare, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import RatingForm from './RatingForm';
 
 export default function EmployeeProfilePage({ params }: { params: { id: string } }) {
   // This would normally fetch employee data based on the ID
   const employee = {
     id: params.id,
-    name: "Sarah Johnson",
-    title: "Product Designer",
-    company: "Credibly Inc.",
-    department: "Design",
-    email: "sarah.johnson@example.com",
-    phone: "+1 (555) 123-4567",
-    joinDate: "Jan 15, 2023",
+    name: 'Sarah Johnson',
+    title: 'Product Designer',
+    company: 'Credibly Inc.',
+    department: 'Design',
+    email: 'sarah.johnson@example.com',
+    phone: '+1 (555) 123-4567',
+    joinDate: 'Jan 15, 2023',
     crediblyScore: 92,
     ratings: {
       professionalism: 4.8,
@@ -30,72 +30,78 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
     },
     messages: [
       {
-        id: "1",
-        sender: "John Doe",
-        content: "Great job on the latest design project! The client was very impressed with your work.",
-        date: "2 days ago",
+        id: '1',
+        sender: 'John Doe',
+        content:
+          'Great job on the latest design project! The client was very impressed with your work.',
+        date: '2 days ago',
         isAdmin: true,
       },
       {
-        id: "2",
-        sender: "Sarah Johnson",
-        content: "Thank you! I really enjoyed working on that project.",
-        date: "2 days ago",
+        id: '2',
+        sender: 'Sarah Johnson',
+        content: 'Thank you! I really enjoyed working on that project.',
+        date: '2 days ago',
         isAdmin: false,
       },
       {
-        id: "3",
-        sender: "John Doe",
-        content: "Your presentation skills have improved significantly. The team appreciated your clear communication.",
-        date: "1 week ago",
+        id: '3',
+        sender: 'John Doe',
+        content:
+          'Your presentation skills have improved significantly. The team appreciated your clear communication.',
+        date: '1 week ago',
         isAdmin: true,
       },
     ],
-  }
+  };
 
   // Comment section state
-  const [comments, setComments] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [newComment, setNewComment] = useState("")
-  const [author, setAuthor] = useState("")
-  const [submitting, setSubmitting] = useState(false)
-  const [alert, setAlert] = useState("")
+  const [comments, setComments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newComment, setNewComment] = useState('');
+  const [author, setAuthor] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [alert, setAlert] = useState('');
 
   useEffect(() => {
     async function fetchComments() {
-      setLoading(true)
-      const res = await fetch(`/api/comments?userId=${params.id}`)
-      const data = await res.json()
-      setComments(data)
-      setLoading(false)
+      setLoading(true);
+      const res = await fetch(`/api/comments?userId=${params.id}`);
+      const data = await res.json();
+      setComments(data);
+      setLoading(false);
     }
-    fetchComments()
-  }, [params.id])
+    fetchComments();
+  }, [params.id]);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!author || !newComment) return
-    setSubmitting(true)
-    await fetch("/api/comments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: params.id, author, text: newComment })
-    })
+    e.preventDefault();
+    if (!author || !newComment) return;
+    setSubmitting(true);
+    await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: params.id, author, text: newComment }),
+    });
     // Send notification
-    await fetch("/api/notifications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: params.id, type: "comment", message: `${author} left you a comment!` })
-    })
-    setNewComment("")
-    setAuthor("")
+    await fetch('/api/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: params.id,
+        type: 'comment',
+        message: `${author} left you a comment!`,
+      }),
+    });
+    setNewComment('');
+    setAuthor('');
     // Refresh comments
-    const res = await fetch(`/api/comments?userId=${params.id}`)
-    const data = await res.json()
-    setComments(data)
-    setSubmitting(false)
-    setAlert("Comment posted and notification sent!")
-    setTimeout(() => setAlert(""), 3000)
+    const res = await fetch(`/api/comments?userId=${params.id}`);
+    const data = await res.json();
+    setComments(data);
+    setSubmitting(false);
+    setAlert('Comment posted and notification sent!');
+    setTimeout(() => setAlert(''), 3000);
   }
 
   return (
@@ -121,9 +127,9 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
               <AvatarImage src="/placeholder.svg" alt={employee.name} />
               <AvatarFallback>
                 {employee.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+                  .split(' ')
+                  .map(n => n[0])
+                  .join('')}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-1">
@@ -162,7 +168,9 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
           <Card>
             <CardHeader>
               <CardTitle className="text-lg sm:text-xl">Credibly Score</CardTitle>
-              <CardDescription>Overall professional credibility score based on performance ratings</CardDescription>
+              <CardDescription>
+                Overall professional credibility score based on performance ratings
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -180,7 +188,9 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
           <Card>
             <CardHeader>
               <CardTitle className="text-lg sm:text-xl">Performance Ratings</CardTitle>
-              <CardDescription>Breakdown of ratings across different professional criteria</CardDescription>
+              <CardDescription>
+                Breakdown of ratings across different professional criteria
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -191,17 +201,20 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
                       <div className="flex items-center">
                         <div className="mr-2 text-sm font-medium">{rating}</div>
                         <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
+                          {[1, 2, 3, 4, 5].map(star => (
                             <Star
                               key={star}
-                              className={`h-4 w-4 ${star <= Math.round(rating) ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                              className={`h-4 w-4 ${star <= Math.round(rating) ? 'fill-primary text-primary' : 'text-muted-foreground'}`}
                             />
                           ))}
                         </div>
                       </div>
                     </div>
                     <div className="h-2 w-full rounded-full bg-muted">
-                      <div className="h-2 rounded-full bg-primary" style={{ width: `${(rating / 5) * 100}%` }} />
+                      <div
+                        className="h-2 rounded-full bg-primary"
+                        style={{ width: `${(rating / 5) * 100}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -221,18 +234,25 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
                   <TabsTrigger value="send">Send Message</TabsTrigger>
                 </TabsList>
                 <TabsContent value="messages" className="space-y-4">
-                  {employee.messages.map((message) => (
-                    <div key={message.id} className={`flex gap-4 ${message.isAdmin ? "flex-row" : "flex-row-reverse"}`}>
+                  {employee.messages.map(message => (
+                    <div
+                      key={message.id}
+                      className={`flex gap-4 ${message.isAdmin ? 'flex-row' : 'flex-row-reverse'}`}
+                    >
                       <Avatar>
                         <AvatarImage src="/placeholder.svg" alt={message.sender} />
                         <AvatarFallback>{message.sender[0]}</AvatarFallback>
                       </Avatar>
-                      <div className={`space-y-1 max-w-[80%] ${message.isAdmin ? "" : "text-right"}`}>
+                      <div
+                        className={`space-y-1 max-w-[80%] ${message.isAdmin ? '' : 'text-right'}`}
+                      >
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium">{message.sender}</p>
                           <p className="text-xs text-muted-foreground">{message.date}</p>
                         </div>
-                        <div className={`rounded-lg p-3 ${message.isAdmin ? "bg-muted" : "bg-primary/10"}`}>
+                        <div
+                          className={`rounded-lg p-3 ${message.isAdmin ? 'bg-muted' : 'bg-primary/10'}`}
+                        >
                           <p className="text-sm">{message.content}</p>
                         </div>
                       </div>
@@ -283,7 +303,7 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
                 />
                 <div className="flex justify-end">
                   <Button type="submit" disabled={submitting || !author || !newComment}>
-                    {submitting ? "Posting..." : "Post Comment"}
+                    {submitting ? 'Posting...' : 'Post Comment'}
                   </Button>
                 </div>
               </form>
@@ -293,12 +313,12 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
                 <div className="text-muted-foreground">No comments yet.</div>
               ) : (
                 <div className="space-y-4">
-                  {comments.map((c) => (
+                  {comments.map(c => (
                     <div key={c._id} className="border rounded p-2">
                       <div className="text-sm font-semibold">{c.author}</div>
                       <div className="text-sm">{c.text}</div>
                       <div className="text-xs text-muted-foreground">
-                        {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
+                        {c.createdAt ? new Date(c.createdAt).toLocaleString() : ''}
                       </div>
                     </div>
                   ))}
@@ -312,5 +332,5 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
         </div>
       </div>
     </div>
-  )
+  );
 }

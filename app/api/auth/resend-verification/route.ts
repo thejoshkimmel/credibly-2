@@ -1,24 +1,24 @@
-import { NextResponse } from "next/server";
-import UserProfile from "@/models/UserProfile";
-import { connectToDatabase } from "@/lib/mongodb";
-import { sendEmail } from "@/lib/email";
-import crypto from "crypto";
-import { NextRequest } from "next/server";
+import { NextResponse } from 'next/server';
+import UserProfile from '@/models/UserProfile';
+import { connectToDatabase } from '@/lib/mongodb';
+import { sendEmail } from '@/lib/email';
+import crypto from 'crypto';
+import { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
   await connectToDatabase();
   const { email } = await req.json();
   const user = await UserProfile.findOne({ email });
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-  if (user.verified) return NextResponse.json({ error: "User already verified" }, { status: 400 });
-  const verificationToken = crypto.randomBytes(32).toString("hex");
+  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  if (user.verified) return NextResponse.json({ error: 'User already verified' }, { status: 400 });
+  const verificationToken = crypto.randomBytes(32).toString('hex');
   user.verificationToken = verificationToken;
   await user.save();
-  const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/verify-email?token=${verificationToken}`;
+  const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
   await sendEmail({
     to: email,
-    subject: "Verify your email",
-    html: `<p>Click <a href='${verifyUrl}'>here</a> to verify your email.</p>`
+    subject: 'Verify your email',
+    html: `<p>Click <a href='${verifyUrl}'>here</a> to verify your email.</p>`,
   });
   return NextResponse.json({ success: true });
-} 
+}

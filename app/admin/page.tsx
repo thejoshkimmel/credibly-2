@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -13,29 +13,29 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState('users');
 
   useEffect(() => {
     const checkAdmin = async () => {
       try {
-        const res = await fetch("/api/auth/check-admin", {
+        const res = await fetch('/api/auth/check-admin', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
         if (!res.ok) {
-          router.replace("/login");
+          router.replace('/login');
           return;
         }
         const data = await res.json();
         if (!data.isAdmin) {
-          router.replace("/");
+          router.replace('/');
           return;
         }
         setIsAdmin(true);
         loadData();
       } catch {
-        router.replace("/login");
+        router.replace('/login');
       }
     };
     checkAdmin();
@@ -45,14 +45,14 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [usersRes, reportsRes] = await Promise.all([
-        fetch("/api/admin/users", {
+        fetch('/api/admin/users', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         }),
-        fetch("/api/admin/reports", {
+        fetch('/api/admin/reports', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         }),
       ]);
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
         setReports(reportsData.reports);
       }
     } catch (error) {
-      console.error("Failed to load data:", error);
+      console.error('Failed to load data:', error);
     }
     setLoading(false);
   };
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="users">User Management</TabsTrigger>
@@ -102,8 +102,11 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {users.map((user) => (
-                    <div key={user._id} className="flex items-center justify-between p-4 border rounded-lg">
+                  {users.map(user => (
+                    <div
+                      key={user._id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div>
                         <h3 className="font-medium">{user.displayName}</h3>
                         <p className="text-sm text-muted-foreground">{user.userId}</p>
@@ -112,14 +115,14 @@ export default function AdminDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleUserAction(user._id, "suspend")}
+                          onClick={() => handleUserAction(user._id, 'suspend')}
                         >
                           Suspend
                         </Button>
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleUserAction(user._id, "delete")}
+                          onClick={() => handleUserAction(user._id, 'delete')}
                         >
                           Delete
                         </Button>
@@ -145,21 +148,24 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {reports.map((report) => (
+                  {reports.map(report => (
                     <div key={report._id} className="p-4 border rounded-lg">
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-medium">Report #{report._id}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Type: {report.type}
-                          </p>
+                          <p className="text-sm text-muted-foreground">Type: {report.type}</p>
                         </div>
-                        <span className={`px-2 py-1 rounded text-sm ${
-                          report.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                          report.status === "reviewing" ? "bg-blue-100 text-blue-800" :
-                          report.status === "resolved" ? "bg-green-100 text-green-800" :
-                          "bg-gray-100 text-gray-800"
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded text-sm ${
+                            report.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : report.status === 'reviewing'
+                                ? 'bg-blue-100 text-blue-800'
+                                : report.status === 'resolved'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {report.status}
                         </span>
                       </div>
@@ -168,21 +174,21 @@ export default function AdminDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleReportAction(report._id, "review")}
+                          onClick={() => handleReportAction(report._id, 'review')}
                         >
                           Review
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleReportAction(report._id, "resolve")}
+                          onClick={() => handleReportAction(report._id, 'resolve')}
                         >
                           Resolve
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleReportAction(report._id, "dismiss")}
+                          onClick={() => handleReportAction(report._id, 'dismiss')}
                         >
                           Dismiss
                         </Button>
@@ -210,4 +216,4 @@ export default function AdminDashboard() {
       </Tabs>
     </div>
   );
-} 
+}

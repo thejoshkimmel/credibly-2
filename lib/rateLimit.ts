@@ -10,4 +10,4 @@ export async function rateLimit(ip: string, key: string, limit = 20, windowSec =
     return false;
   }
   return true;
-} 
+}
