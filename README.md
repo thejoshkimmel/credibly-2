@@ -1,5 +1,7 @@
 # Credibly
 
+[![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-black?style=flat&logo=vercel)](https://vercel.com)
+
 A Next.js application for managing and sharing user ratings.
 
 ## Getting Started
