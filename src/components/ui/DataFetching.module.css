@@ -1,0 +1,39 @@
+.container {
+  width: 100%;
+}
+
+.skeleton {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeletonText {
+  height: 1.5rem;
+  background-color: var(--color-muted);
+  border-radius: var(--radius-md);
+}
+
+.skeletonBlock {
+  height: 8rem;
+  background-color: var(--color-muted);
+  border-radius: var(--radius-lg);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .skeletonText {
+    height: 1.25rem;
+  }
+
+  .skeletonBlock {
+    height: 6rem;
+  }
+} 

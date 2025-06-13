@@ -1,37 +1,35 @@
-import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "sonner"
-import ClientLayout from "./components/ClientLayout"
-import Link from "next/link"
+import { Navbar } from "@/components/layout/Navbar"
+import { Footer } from "@/components/layout/Footer"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Credibly - Professional Credibility That Travels With You",
-  description: "Track, manage, and showcase professional credibility across organizations",
-  generator: 'v0.dev'
+  title: "Credibly",
+  description: "Employee performance management platform",
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <ClientLayout>
+        <div className="min-h-screen flex flex-col">
+          <header className="border-b">
+            <Navbar />
+          </header>
+          <main className="flex-1">
             {children}
-          </ClientLayout>
-          <Toaster />
-          <Link href="/terms-of-service" className="px-4 text-gray-400 hover:text-white">
-            Terms of Service
-          </Link>
-        </ThemeProvider>
+          </main>
+          <footer className="border-t">
+            <Footer />
+          </footer>
+        </div>
       </body>
     </html>
   )

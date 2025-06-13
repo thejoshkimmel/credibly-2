@@ -9,12 +9,15 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Loader2 } from "lucide-react"
 import Cookies from "js-cookie"
+import { useRouter } from "next/navigation"
+import { animations } from "@/lib/utils/animations"
 
 export default function LoginPage() {
   const [userType, setUserType] = useState("company")
   const [error, setError] = useState("")
   const [resendStatus, setResendStatus] = useState("")
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -57,7 +60,7 @@ export default function LoginPage() {
       }
 
       // Redirect to dashboard
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     } catch (err) {
       console.error("Login error:", err)
       setError("Login failed. Please try again.")
@@ -93,18 +96,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
-      <Link href="/" className="absolute left-8 top-8 flex items-center gap-2">
-        <img src="/credibly-logo.png" alt="Credibly Logo" className="h-12 w-auto" />
-      </Link>
-
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Log in</CardTitle>
-          <CardDescription>Enter your email and password to access your account</CardDescription>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className={`w-full max-w-md ${animations.formEnter}`}>
+        <CardHeader>
+          <CardTitle>Welcome Back</CardTitle>
+          <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-4">
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <RadioGroup defaultValue="company" className="flex space-x-2" value={userType} onValueChange={setUserType}>
                 <div className="flex items-center space-x-2">
@@ -118,21 +117,29 @@ export default function LoginPage() {
               </RadioGroup>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+              <label htmlFor="email" className="text-sm font-medium">
+                Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                required
+              />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link href="/forgot-password" className="text-sm text-primary underline-offset-4 hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
-              <Input id="password" name="password" type="password" required />
+              <label htmlFor="password" className="text-sm font-medium">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                required
+              />
             </div>
-            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md">Log in</button>
             {error && (
-              <div className="text-red-600 text-center mt-2">
+              <div className="text-sm text-red-500">
                 {error}
                 {error.startsWith("Please verify your email") && (
                   <div className="mt-2 flex flex-col items-center">
@@ -145,8 +152,11 @@ export default function LoginPage() {
                 )}
               </div>
             )}
-          </CardContent>
-        </form>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+        </CardContent>
         <CardFooter className="flex flex-col">
           <div className="text-sm text-muted-foreground text-center">
             Don&apos;t have an account?{" "}
