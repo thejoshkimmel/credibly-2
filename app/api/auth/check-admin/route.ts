@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
-import UserProfile from "@/models/UserProfile";
-import { connectToDatabase } from "@/lib/mongodb";
+import { query } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
 
 export async function GET(req) {
-  await connectToDatabase();
-  let userId;
   try {
-    userId = getUserFromRequest(req);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const user = await UserProfile.findOne({ userId });
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+    const { rows } = await query(
+      "SELECT is_admin FROM users WHERE id = $1",
+      [user.id]
+    );
 
-  return NextResponse.json({ isAdmin: user.role === "admin" });
+    return NextResponse.json({ isAdmin: rows[0]?.is_admin || false });
+  } catch (error) {
+    console.error("Error checking admin status:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 } 
