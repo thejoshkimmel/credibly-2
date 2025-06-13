@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import Block from "@/models/Block";
-import { connectToDatabase } from "@/lib/mongodb";
 import { getUserFromRequest } from "@/lib/auth";
 import { z } from "zod";
 
@@ -11,8 +9,6 @@ const blockSchema = z.object({
 
 // GET /api/blocks - Get list of blocked users
 export async function GET(req) {
-  await connectToDatabase();
-
   try {
     const blocks = await Block.find({ blockerId: req.userId })
       .populate("blockedId", "displayName userId profilePicture");
@@ -24,8 +20,6 @@ export async function GET(req) {
 
 // POST /api/blocks - Block a user
 export async function POST(req) {
-  await connectToDatabase();
-
   try {
     const body = await req.json();
     const parsed = blockSchema.safeParse(body);
@@ -53,8 +47,6 @@ export async function POST(req) {
 
 // DELETE /api/blocks - Unblock a user
 export async function DELETE(req) {
-  await connectToDatabase();
-
   try {
     const { searchParams } = new URL(req.url);
     const blockedId = searchParams.get("blockedId");

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import Report from "@/models/Report";
 import UserProfile from "@/models/UserProfile";
 import { connectToDatabase } from "@/lib/mongodb";
 import { getUserFromRequest } from "@/lib/auth";

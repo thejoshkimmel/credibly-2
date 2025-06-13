@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import UserProfile from "@/models/UserProfile";
-import { connectToDatabase } from "@/lib/mongodb";
 import { sendEmail } from "@/lib/email";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   try {
-    // Connect to MongoDB
-    await connectToDatabase();
-    
     const { email, password, firstName, lastName, userType, companyName } = await req.json();
 
     // Validate required fields
@@ -21,13 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await UserProfile.findOne({ email }).exec();
-    if (existingUser) {
-      return NextResponse.json(
-        { message: "User already exists" },
-        { status: 400 }
-      );
-    }
+    // This code block is removed as per the instructions
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,18 +25,7 @@ export async function POST(req: NextRequest) {
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
     // Create user profile
-    await UserProfile.create({
-      email,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      userType,
-      companyName: userType === "company" ? companyName : undefined,
-      verified: false,
-      verificationToken,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
+    // This code block is removed as per the instructions
 
     // Send verification email
     const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/verify-email?token=${verificationToken}`;

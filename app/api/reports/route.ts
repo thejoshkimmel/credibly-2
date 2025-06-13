@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import Report from "@/models/Report";
-import { connectToDatabase } from "@/lib/mongodb";
 import { getUserFromRequest } from "@/lib/auth";
 import { z } from "zod";
 import redis from '@/lib/redis';
@@ -12,7 +10,6 @@ const reportSchema = z.object({
 });
 
 export async function POST(req) {
-  await connectToDatabase();
   let reporterId;
   try {
     reporterId = getUserFromRequest(req);
@@ -30,12 +27,6 @@ export async function POST(req) {
     const { reportedUserId, type, description } = parsed.data;
 
     // Create the report
-    const report = await Report.create({
-      reporterId,
-      reportedUserId,
-      type,
-      description,
-    });
     // Invalidate cache for reported user
     await redis.del(`user_profile_${reportedUserId}`);
     return NextResponse.json({ success: true, report });
