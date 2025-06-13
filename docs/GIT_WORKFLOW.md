@@ -1,5 +1,32 @@
 # Git Workflow Guidelines
 
+## Pre-Development Checklist
+
+1. **Update Local Repository**:
+   ```bash
+   # Check remote repository
+   git remote -v
+   
+   # Fetch latest changes
+   git fetch origin
+   
+   # Update main branch
+   git checkout main
+   git pull origin main
+   
+   # Verify status
+   git status
+   ```
+
+2. **Create Feature Branch**:
+   ```bash
+   # Create and switch to new branch
+   git checkout -b feature/your-feature-name
+   
+   # Verify branch creation
+   git branch
+   ```
+
 ## Branch Naming Conventions
 
 - Feature branches: `feature/description-of-feature`
@@ -60,6 +87,40 @@ feat(ratings): implement group rating system
    ```
 
 4. Create a Pull Request (PR) on GitHub
+
+## Post-Change Steps
+
+1. **Stage Changes**:
+   ```bash
+   # Review changes
+   git status
+   
+   # Stage specific files
+   git add path/to/file1 path/to/file2
+   
+   # Or stage all changes
+   git add .
+   ```
+
+2. **Commit Changes**:
+   ```bash
+   # Commit with descriptive message
+   git commit -m "feat(scope): description of changes"
+   ```
+
+3. **Push to GitHub**:
+   ```bash
+   # Push to remote repository
+   git push origin feature/your-feature-name
+   
+   # Verify push
+   git status
+   ```
+
+4. **Monitor Deployment**:
+   - Check Vercel deployment status
+   - Verify changes in staging environment
+   - Test functionality after deployment
 
 ## Before Merging
 
@@ -133,4 +194,14 @@ feat(ratings): implement group rating system
 5. **After merging**:
    - Delete feature branch
    - Update deployment
-   - Monitor for issues 
+   - Monitor for issues
+
+6. **Pre-Development**:
+   - Always update local repository
+   - Check for pending changes
+   - Verify remote connection
+
+7. **Post-Development**:
+   - Push changes promptly
+   - Monitor Vercel deployment
+   - Verify functionality 
