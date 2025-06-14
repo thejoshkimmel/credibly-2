@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { connections } from "@/db/schema";
-import { eq, or } from "drizzle-orm";
+import { eq, or, and } from "drizzle-orm";
 
 export async function GET(req) {
   try {
@@ -46,10 +46,15 @@ export async function POST(req) {
       .from(connections)
       .where(
         or(
-          eq(connections.userAId, user.id),
-          eq(connections.userBId, targetUserId)
-        ),
-        eq(connections.status, "pending")
+          and(
+            eq(connections.userAId, user.id),
+            eq(connections.userBId, targetUserId)
+          ),
+          and(
+            eq(connections.userAId, targetUserId),
+            eq(connections.userBId, user.id)
+          )
+        )
       );
 
     if (existingConnection) {
