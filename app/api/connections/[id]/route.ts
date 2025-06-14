@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { connections } from "@/db/schema";
+import { eq, and, or } from "drizzle-orm";
 
 export async function GET(req, { params }) {
   try {
@@ -9,16 +11,18 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { rows: [connection] } = await query(
-      `SELECT c.*, 
-              u1.first_name as user_a_first_name, u1.last_name as user_a_last_name,
-              u2.first_name as user_b_first_name, u2.last_name as user_b_last_name
-       FROM connections c
-       JOIN users u1 ON c.user_a_id = u1.id
-       JOIN users u2 ON c.user_b_id = u2.id
-       WHERE c.id = $1 AND (c.user_a_id = $2 OR c.user_b_id = $2)`,
-      [params.id, user.id]
-    );
+    const [connection] = await db
+      .select()
+      .from(connections)
+      .where(
+        and(
+          eq(connections.id, parseInt(params.id)),
+          or(
+            eq(connections.userAId, user.id),
+            eq(connections.userBId, user.id)
+          )
+        )
+      );
 
     if (!connection) {
       return NextResponse.json({ error: "Connection not found" }, { status: 404 });
@@ -39,21 +43,29 @@ export async function PATCH(req, { params }) {
     }
 
     const { status } = await req.json();
-    if (!status) {
-      return NextResponse.json({ error: "Missing status" }, { status: 400 });
-    }
 
-    const { rows: [updatedConnection] } = await query(
-      `UPDATE connections 
-       SET status = $1, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $2 AND (user_a_id = $3 OR user_b_id = $3)
-       RETURNING *`,
-      [status, params.id, user.id]
-    );
+    const [connection] = await db
+      .select()
+      .from(connections)
+      .where(
+        and(
+          eq(connections.id, parseInt(params.id)),
+          or(
+            eq(connections.userAId, user.id),
+            eq(connections.userBId, user.id)
+          )
+        )
+      );
 
-    if (!updatedConnection) {
+    if (!connection) {
       return NextResponse.json({ error: "Connection not found" }, { status: 404 });
     }
+
+    const [updatedConnection] = await db
+      .update(connections)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(connections.id, parseInt(params.id)))
+      .returning();
 
     return NextResponse.json(updatedConnection);
   } catch (error) {
@@ -69,18 +81,28 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { rows: [deletedConnection] } = await query(
-      `DELETE FROM connections 
-       WHERE id = $1 AND (user_a_id = $2 OR user_b_id = $2)
-       RETURNING *`,
-      [params.id, user.id]
-    );
+    const [connection] = await db
+      .select()
+      .from(connections)
+      .where(
+        and(
+          eq(connections.id, parseInt(params.id)),
+          or(
+            eq(connections.userAId, user.id),
+            eq(connections.userBId, user.id)
+          )
+        )
+      );
 
-    if (!deletedConnection) {
+    if (!connection) {
       return NextResponse.json({ error: "Connection not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true });
+    await db
+      .delete(connections)
+      .where(eq(connections.id, parseInt(params.id)));
+
+    return NextResponse.json({ message: "Connection deleted successfully" });
   } catch (error) {
     console.error("Error deleting connection:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET(req) {
   try {
@@ -9,12 +11,16 @@ export async function GET(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { rows } = await query(
-      "SELECT is_admin FROM users WHERE id = $1",
-      [user.id]
-    );
+    const [userProfile] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, user.id));
 
-    return NextResponse.json({ isAdmin: rows[0]?.is_admin || false });
+    if (!userProfile) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ isAdmin: userProfile.userType === "admin" });
   } catch (error) {
     console.error("Error checking admin status:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
