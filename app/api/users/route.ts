@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import UserProfile from "@/models/UserProfile";
-import { connectToDatabase } from "@/lib/mongodb";
-import redis from '@/lib/redis';
-import { rateLimit } from '@/lib/rateLimit';
 import { query } from "@/lib/db";
-import bcrypt from "bcryptjs";
 import { getUserFromRequest } from "@/lib/auth";
 
 export async function GET(req) {

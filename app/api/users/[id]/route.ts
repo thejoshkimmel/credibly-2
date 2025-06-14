@@ -1,10 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
-import UserProfile from "@/models/UserProfile";
-import Rating from "@/models/Rating";
-import { connectToDatabase } from "@/lib/mongodb";
-import redis from '@/lib/redis';
-import { rateLimit } from '@/lib/rateLimit';
 import { query } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
 
