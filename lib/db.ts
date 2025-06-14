@@ -1,32 +1,15 @@
+import { drizzle } from 'drizzle-orm/vercel-postgres';
 import { sql } from '@vercel/postgres';
-import { Pool } from 'pg';
+import * as schema from '../db/schema';
 
-// Create a new pool using the connection string from environment variables
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-export async function query(text: string, params?: any[]) {
-  try {
-    const start = Date.now();
-    const res = await pool.query(text, params);
-    const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
-    return res;
-  } catch (error) {
-    console.error('Error executing query', { text, error });
-    throw error;
-  }
-}
+// Create a Drizzle instance
+export const db = drizzle(sql, { schema });
 
 // Helper function to create tables if they don't exist
 export async function initDatabase() {
   try {
     // Create users table
-    await query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
@@ -42,10 +25,10 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `;
 
     // Create ratings table
-    await query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS ratings (
         id SERIAL PRIMARY KEY,
         rated_user_id INTEGER REFERENCES users(id),
@@ -58,10 +41,10 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `;
 
     // Create connections table
-    await query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS connections (
         id SERIAL PRIMARY KEY,
         user_a_id INTEGER REFERENCES users(id),
@@ -71,10 +54,10 @@ export async function initDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(user_a_id, user_b_id)
       );
-    `);
+    `;
 
     // Create reports table
-    await query(`
+    await sql`
       CREATE TABLE IF NOT EXISTS reports (
         id SERIAL PRIMARY KEY,
         reporter_id INTEGER REFERENCES users(id),
@@ -88,7 +71,7 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
+    `;
 
     console.log('Database initialized successfully');
   } catch (error) {

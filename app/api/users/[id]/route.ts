@@ -1,49 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { UserController } from '@/lib/controllers/userController';
 
-export async function GET(req, { params }) {
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const user = await getUserFromRequest(req);
+    // Check if user is authenticated
+    const currentUser = await getUserFromRequest(req);
+    if (!currentUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = parseInt(params.id);
+    if (isNaN(userId)) {
+      return NextResponse.json(
+        { error: 'Invalid user ID' },
+        { status: 400 }
+      );
+    }
+
+    const user = await UserController.getById(userId);
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
-    const { rows: [targetUser] } = await query(
-      `SELECT id, first_name, last_name, user_type, company_name, created_at
-       FROM users
-       WHERE id = $1`,
-      [params.id]
-    );
-
-    if (!targetUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Get user's average rating
-    const { rows: [{ avg_rating }] } = await query(
-      `SELECT COALESCE(AVG(overall_rating), 0) as avg_rating
-       FROM ratings
-       WHERE rated_user_id = $1`,
-      [params.id]
-    );
-
-    // Get total number of ratings
-    const { rows: [{ total_ratings }] } = await query(
-      `SELECT COUNT(*) as total_ratings
-       FROM ratings
-       WHERE rated_user_id = $1`,
-      [params.id]
-    );
-
-    return NextResponse.json({
-      ...targetUser,
-      averageRating: parseFloat(avg_rating),
-      totalRatings: parseInt(total_ratings)
-    });
+    return NextResponse.json(user);
   } catch (error) {
-    console.error("Error fetching user:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Error in GET /api/users/[id]:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 

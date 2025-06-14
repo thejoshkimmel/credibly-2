@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { db } from "@/lib/db";
 import { getUserFromRequest } from "@/lib/auth";
+import { users, ratings } from "@/db/schema";
+import { eq, sql } from "drizzle-orm";
 
 export async function GET(req) {
   try {
@@ -9,37 +11,35 @@ export async function GET(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { rows: [userProfile] } = await query(
-      `SELECT id, first_name, last_name, user_type, company_name, created_at
-       FROM users
-       WHERE id = $1`,
-      [user.id]
-    );
+    const [userProfile] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, user.id));
 
     if (!userProfile) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Get user's average rating
-    const { rows: [{ avg_rating }] } = await query(
-      `SELECT COALESCE(AVG(overall_rating), 0) as avg_rating
-       FROM ratings
-       WHERE rated_user_id = $1`,
-      [user.id]
-    );
+    const [{ avgRating }] = await db
+      .select({
+        avgRating: sql<number>`COALESCE(AVG(${ratings.overallRating}), 0)`,
+      })
+      .from(ratings)
+      .where(eq(ratings.ratedUserId, user.id));
 
     // Get total number of ratings
-    const { rows: [{ total_ratings }] } = await query(
-      `SELECT COUNT(*) as total_ratings
-       FROM ratings
-       WHERE rated_user_id = $1`,
-      [user.id]
-    );
+    const [{ totalRatings }] = await db
+      .select({
+        totalRatings: sql<number>`COUNT(*)`,
+      })
+      .from(ratings)
+      .where(eq(ratings.ratedUserId, user.id));
 
     return NextResponse.json({
       ...userProfile,
-      averageRating: parseFloat(avg_rating),
-      totalRatings: parseInt(total_ratings)
+      averageRating: avgRating,
+      totalRatings: totalRatings,
     });
   } catch (error) {
     console.error("Error fetching user profile:", error);
@@ -56,16 +56,16 @@ export async function PATCH(req) {
 
     const { firstName, lastName, companyName } = await req.json();
 
-    const { rows: [updatedUser] } = await query(
-      `UPDATE users 
-       SET first_name = COALESCE($1, first_name),
-           last_name = COALESCE($2, last_name),
-           company_name = COALESCE($3, company_name),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $4
-       RETURNING id, first_name, last_name, user_type, company_name, created_at`,
-      [firstName, lastName, companyName, user.id]
-    );
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        firstName: firstName ?? undefined,
+        lastName: lastName ?? undefined,
+        companyName: companyName ?? undefined,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id))
+      .returning();
 
     if (!updatedUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
