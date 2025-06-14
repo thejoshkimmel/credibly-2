@@ -10,7 +10,7 @@ import { getUserFromRequest } from "@/lib/auth";
 export async function GET(req) {
   try {
     const user = await getUserFromRequest(req);
-    if (!user?.isAdmin) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -18,17 +18,22 @@ export async function GET(req) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const offset = (page - 1) * limit;
+    const search = searchParams.get("search") || "";
 
     const { rows: users } = await query(
-      `SELECT id, email, first_name, last_name, user_type, company_name, verified, created_at 
-       FROM users 
-       ORDER BY created_at DESC 
-       LIMIT $1 OFFSET $2`,
-      [limit, offset]
+      `SELECT id, first_name, last_name, user_type, company_name, created_at
+       FROM users
+       WHERE (first_name ILIKE $1 OR last_name ILIKE $1 OR company_name ILIKE $1)
+       ORDER BY created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [`%${search}%`, limit, offset]
     );
 
     const { rows: [{ count }] } = await query(
-      "SELECT COUNT(*) FROM users"
+      `SELECT COUNT(*) 
+       FROM users 
+       WHERE (first_name ILIKE $1 OR last_name ILIKE $1 OR company_name ILIKE $1)`,
+      [`%${search}%`]
     );
 
     return NextResponse.json({
@@ -45,32 +50,24 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    const { email, password, firstName, lastName, userType, companyName } = await req.json();
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    // Validate input
-    if (!email || !password) {
+    const { firstName, lastName, userType, companyName } = await req.json();
+
+    // Validate required fields
+    if (!firstName || !lastName || !userType) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Check if user exists
-    const { rows: existingUsers } = await query(
-      "SELECT id FROM users WHERE email = $1",
-      [email]
-    );
-
-    if (existingUsers.length > 0) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
+    // Create new user
     const { rows: [newUser] } = await query(
-      `INSERT INTO users (email, password, first_name, last_name, user_type, company_name)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, email, first_name, last_name, user_type, company_name`,
-      [email, hashedPassword, firstName, lastName, userType, companyName]
+      `INSERT INTO users (first_name, last_name, user_type, company_name)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, first_name, last_name, user_type, company_name, created_at`,
+      [firstName, lastName, userType, companyName]
     );
 
     return NextResponse.json(newUser);

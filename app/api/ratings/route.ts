@@ -7,6 +7,7 @@ import { getUserFromRequest } from "@/lib/auth";
 import { z } from "zod";
 import redis from '@/lib/redis';
 import { rateLimit } from '@/lib/rateLimit';
+import { query } from "@/lib/db";
 
 // Simple in-memory rate limiter (per IP, 10 requests per minute)
 const rateLimitMap = new Map();
@@ -26,67 +27,85 @@ const ratingSchema = z.object({
 });
 
 export async function POST(req) {
-  await connectToDatabase();
-  // Rate limiting
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-  const allowed = await rateLimit(ip, 'ratings', 20, 60);
-  if (!allowed) {
-    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
-  }
-  // Auth
-  let userId;
   try {
-    userId = getUserFromRequest(req);
-  } catch (err) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { ratedUserId, professionalism, timeliness, communication, overall, comment } = await req.json();
+
+    // Validate required fields
+    if (!ratedUserId || !professionalism || !timeliness || !communication || !overall) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Check if user has already rated this person
+    const { rows: existingRatings } = await query(
+      "SELECT id FROM ratings WHERE rater_user_id = $1 AND rated_user_id = $2",
+      [user.id, ratedUserId]
+    );
+
+    if (existingRatings.length > 0) {
+      return NextResponse.json({ error: "You have already rated this user" }, { status: 400 });
+    }
+
+    // Create new rating
+    const { rows: [newRating] } = await query(
+      `INSERT INTO ratings (
+        rater_user_id, rated_user_id, professionalism_rating,
+        timeliness_rating, communication_rating, overall_rating, comment
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *`,
+      [user.id, ratedUserId, professionalism, timeliness, communication, overall, comment]
+    );
+
+    return NextResponse.json(newRating);
+  } catch (error) {
+    console.error("Error creating rating:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  // Validation
-  const body = await req.json();
-  const parsed = ratingSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
-  }
-  const { raterUserId, ratedUserId, criteria, comment } = parsed.data;
-  if (userId !== raterUserId) {
-    return NextResponse.json({ error: "User mismatch" }, { status: 401 });
-  }
-  // Save the rating
-  const rating = await Rating.create({ raterUserId, ratedUserId, criteria, comment });
-  // Invalidate cache for ratings and user profile
-  await redis.del(`ratings_${ratedUserId}`);
-  await redis.del(`user_profile_${ratedUserId}`);
-  // Recalculate averages and update UserProfile
-  const ratings = await Rating.find({ ratedUserId });
-  const keys = ["professionalism", "timeliness", "communication", "overall"];
-  const averages = {};
-  for (const key of keys) {
-    const values = ratings.map(r => r.criteria[key]);
-    averages[key] = values.length ? (values.reduce((a, b) => a + b, 0) / values.length) : 0;
-  }
-  const overallAvg = ratings.length ? (ratings.map(r => r.criteria.overall).reduce((a, b) => a + b, 0) / ratings.length) : 0;
-  await UserProfile.findByIdAndUpdate(ratedUserId, {
-    averageRating: overallAvg,
-    ratingsCount: ratings.length,
-  });
-  return NextResponse.json({ success: true, rating });
 }
 
 export async function GET(req) {
-  await connectToDatabase();
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-  const allowed = await rateLimit(ip, 'ratings', 20, 60);
-  if (!allowed) {
-    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  try {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "20", 10);
+    const offset = (page - 1) * limit;
+
+    const { rows: ratings } = await query(
+      `SELECT r.*, 
+              u1.first_name as rater_first_name, u1.last_name as rater_last_name,
+              u2.first_name as rated_first_name, u2.last_name as rated_last_name
+       FROM ratings r
+       JOIN users u1 ON r.rater_user_id = u1.id
+       JOIN users u2 ON r.rated_user_id = u2.id
+       WHERE r.rater_user_id = $1 OR r.rated_user_id = $1
+       ORDER BY r.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [user.id, limit, offset]
+    );
+
+    const { rows: [{ count }] } = await query(
+      "SELECT COUNT(*) FROM ratings WHERE rater_user_id = $1 OR rated_user_id = $1",
+      [user.id]
+    );
+
+    return NextResponse.json({
+      ratings,
+      total: parseInt(count),
+      page,
+      limit
+    });
+  } catch (error) {
+    console.error("Error fetching ratings:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  const { searchParams } = new URL(req.url);
-  const ratedUserId = searchParams.get("ratedUserId");
-  if (!ratedUserId) return NextResponse.json({ error: "Missing ratedUserId" }, { status: 400 });
-  const cacheKey = `ratings_${ratedUserId}`;
-  const cached = await redis.get(cacheKey);
-  if (cached) {
-    return NextResponse.json(JSON.parse(cached));
-  }
-  const ratings = await Rating.find({ ratedUserId });
-  await redis.set(cacheKey, JSON.stringify(ratings), 'EX', 120);
-  return NextResponse.json(ratings);
 } 

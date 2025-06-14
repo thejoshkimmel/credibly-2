@@ -5,39 +5,86 @@ import Rating from "@/models/Rating";
 import { connectToDatabase } from "@/lib/mongodb";
 import redis from '@/lib/redis';
 import { rateLimit } from '@/lib/rateLimit';
+import { query } from "@/lib/db";
+import { getUserFromRequest } from "@/lib/auth";
 
 export async function GET(req, { params }) {
-  await connectToDatabase();
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-  const allowed = await rateLimit(ip, 'user_profile', 20, 60);
-  if (!allowed) {
-    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  try {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { rows: [targetUser] } = await query(
+      `SELECT id, first_name, last_name, user_type, company_name, created_at
+       FROM users
+       WHERE id = $1`,
+      [params.id]
+    );
+
+    if (!targetUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Get user's average rating
+    const { rows: [{ avg_rating }] } = await query(
+      `SELECT COALESCE(AVG(overall_rating), 0) as avg_rating
+       FROM ratings
+       WHERE rated_user_id = $1`,
+      [params.id]
+    );
+
+    // Get total number of ratings
+    const { rows: [{ total_ratings }] } = await query(
+      `SELECT COUNT(*) as total_ratings
+       FROM ratings
+       WHERE rated_user_id = $1`,
+      [params.id]
+    );
+
+    return NextResponse.json({
+      ...targetUser,
+      averageRating: parseFloat(avg_rating),
+      totalRatings: parseInt(total_ratings)
+    });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  const { id } = params;
-  const cacheKey = `user_profile_${id}`;
-  // Try cache first
-  const cached = await redis.get(cacheKey);
-  if (cached) {
-    return NextResponse.json(JSON.parse(cached));
+}
+
+export async function PATCH(req, { params }) {
+  try {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Only allow users to update their own profile
+    if (user.id !== params.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { firstName, lastName, companyName } = await req.json();
+
+    const { rows: [updatedUser] } = await query(
+      `UPDATE users 
+       SET first_name = COALESCE($1, first_name),
+           last_name = COALESCE($2, last_name),
+           company_name = COALESCE($3, company_name),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $4
+       RETURNING id, first_name, last_name, user_type, company_name, created_at`,
+      [firstName, lastName, companyName, params.id]
+    );
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  // Find user profile
-  const user = await UserProfile.findById(id).lean();
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-  // Find all ratings for this user
-  const ratings = await Rating.find({ ratedUserId: id }).lean();
-  // Calculate averages
-  const criteria = ["professionalism", "timeliness", "communication", "overall"];
-  const averages = {};
-  for (const key of criteria) {
-    const values = ratings.map(r => r.criteria[key]);
-    averages[key] = values.length ? (values.reduce((a, b) => a + b, 0) / values.length) : null;
-  }
-  const response = {
-    ...user,
-    ratings,
-    averages,
-  };
-  // Cache for 5 minutes
-  await redis.set(cacheKey, JSON.stringify(response), 'EX', 300);
-  return NextResponse.json(response);
 } 

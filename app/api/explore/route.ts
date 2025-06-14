@@ -2,31 +2,48 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import redis from '@/lib/redis';
 import { rateLimit } from '@/lib/rateLimit';
+import { query } from "@/lib/db";
+import { getUserFromRequest } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-  const allowed = await rateLimit(ip, 'explore', 20, 60);
-  if (!allowed) {
-    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  try {
+    const user = await getUserFromRequest(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "20", 10);
+    const offset = (page - 1) * limit;
+    const search = searchParams.get("search") || "";
+
+    const { rows: users } = await query(
+      `SELECT id, first_name, last_name, user_type, company_name, created_at
+       FROM users
+       WHERE (first_name ILIKE $1 OR last_name ILIKE $1 OR company_name ILIKE $1)
+       AND id != $2
+       ORDER BY created_at DESC
+       LIMIT $3 OFFSET $4`,
+      [`%${search}%`, user.id, limit, offset]
+    );
+
+    const { rows: [{ count }] } = await query(
+      `SELECT COUNT(*) 
+       FROM users 
+       WHERE (first_name ILIKE $1 OR last_name ILIKE $1 OR company_name ILIKE $1)
+       AND id != $2`,
+      [`%${search}%`, user.id]
+    );
+
+    return NextResponse.json({
+      users,
+      total: parseInt(count),
+      page,
+      limit
+    });
+  } catch (error) {
+    console.error("Error exploring users:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-  const db = await connectToDatabase();
-  const cacheKey = 'explore_trending';
-  const cached = await redis.get(cacheKey);
-  if (cached) {
-    return NextResponse.json(JSON.parse(cached));
-  }
-  // Aggregate ratings by rateeId
-  const trending = await db.collection("ratings").aggregate([
-    {
-      $group: {
-        _id: "$rateeId",
-        count: { $sum: 1 },
-        avgScore: { $avg: "$stars" },
-      },
-    },
-    { $sort: { count: -1, avgScore: -1 } },
-    { $limit: 10 },
-  ]).toArray();
-  await redis.set(cacheKey, JSON.stringify(trending), 'EX', 120);
-  return NextResponse.json(trending);
 } 
